@@ -15,6 +15,9 @@ export class AppService {
     const entries = await this.prisma.entry.findMany({
       skip,
       take,
+      orderBy: {
+        created_at: 'asc',
+      },
     });
     const hasNextPage = currentPage < totalPages;
     return {

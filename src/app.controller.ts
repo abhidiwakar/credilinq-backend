@@ -6,15 +6,15 @@ import {
   Post,
   Query,
   Response,
-  UploadedFile,
-  UseInterceptors,
+  UploadedFiles,
+  UseInterceptors
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import sanitizeFilename from 'sanitize-filename';
 import { AppService } from './app.service';
 import { CreateEntryDTO } from './dto/create-entry.dto';
-import { safeParseInt } from './utils/core.utils';
+import { safeParseInt, shortUUID } from './utils/core.utils';
 
 @Controller()
 export class AppController {
@@ -35,10 +35,10 @@ export class AppController {
 
   @Post('upload')
   @UseInterceptors(
-    FileInterceptor('file', {
+    FilesInterceptor('files', 6, {
       limits: {
         fileSize: 1024 * 1024 * 5, // 5MB
-        files: 1,
+        files: 6,
       },
       fileFilter(_, file, callback) {
         if (file.mimetype === 'application/pdf') {
@@ -50,7 +50,7 @@ export class AppController {
       storage: diskStorage({
         destination: './storage',
         filename: (_, file, cb) => {
-          const filename = `${+new Date()}_${sanitizeFilename(
+          const filename = `${shortUUID()}_${sanitizeFilename(
             file.originalname,
           )}`;
           cb(null, filename);
@@ -59,7 +59,7 @@ export class AppController {
     }),
   )
   public async uploadFile(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() file: Express.Multer.File[],
     @Response() res,
   ) {
     if (!file) {
@@ -68,6 +68,11 @@ export class AppController {
 
     return res.status(201).json({
       message: 'File uploaded successfully',
+      data: file.map((f) => ({
+        path: f.path,
+        size: f.size,
+        name: f.filename,
+      })),
     });
   }
 }
