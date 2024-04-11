@@ -1,4 +1,4 @@
-# Credlinq Backend
+# Credilinq Backend
 This is the backend for credlinq clone app. Find more [here](https://github.com/abhidiwakar/credilinq-front)
 
 ## Clone
